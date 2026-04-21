@@ -3,9 +3,9 @@ services:
  app:
    build: .
    ports:
-     - "5500:5500"
+     - "5000:5000"
    environment:
-     - PORT=5500
+     - PORT=5000
      - MONGODB_URI=mongodb://db:27017/registerApp
    depends_on:
      - db

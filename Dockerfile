@@ -9,7 +9,6 @@ COPY package*.json ./
 
 # Install app dependencies
 RUN npm install
-RUN npm audit fix
 
 # Bundle app source
 COPY . .
@@ -17,5 +16,5 @@ COPY . .
 # Expose the port the app runs on
 EXPOSE 5000
 
-# Define the command to run the app (using "npm start")
-CMD [ "npm", "start" ]
+# Define the command to run the app
+CMD [ "npm", "run", "prod" ]
