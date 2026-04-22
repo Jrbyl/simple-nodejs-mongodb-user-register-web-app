@@ -193,6 +193,8 @@ router.get('/edit/:id', editUser);
 router.post('/update/:id', upload, updateUser);
 router.get('/delete/:id', deleteUser);
 
+// Export the router and handlers
+
 module.exports = router;
 module.exports.handlers = {
     listUsers,
