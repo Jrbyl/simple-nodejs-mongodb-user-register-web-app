@@ -22,7 +22,7 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage }).single('image');
 
 // Fetch users with pagination, sorting, and search
-router.get('/', async (req, res) => {
+async function listUsers(req, res) {
     try {
         // Pagination settings
         const page = parseInt(req.query.page) || 1;
@@ -59,15 +59,35 @@ router.get('/', async (req, res) => {
     } catch (error) {
         res.json({ message: error.message });
     }
-});
+}
 
 // Insert user into database
-router.post('/add', upload, async (req, res) => {
+async function registerUser(req, res) {
+    const { name, email, phone } = req.body || {};
+
+    if (!name || !email || !phone) {
+        req.session.message = {
+            type: 'danger',
+            message: 'Name, email, and phone are required'
+        };
+        return res.redirect('/');
+    }
+
     try {
+        const existingUser = await User.findOne({ email });
+
+        if (existingUser) {
+            req.session.message = {
+                type: 'danger',
+                message: 'User already exists'
+            };
+            return res.redirect('/');
+        }
+
         const user = new User({
-            name: req.body.name,
-            email: req.body.email,
-            phone: req.body.phone,
+            name,
+            email,
+            phone,
             image: req.file ? req.file.filename : 'user_unknown.png'
         });
         await user.save();
@@ -81,32 +101,31 @@ router.post('/add', upload, async (req, res) => {
             message: error.message
         };
     }
-    res.redirect('/');
-});
+    return res.redirect('/');
+}
 
 // Edit user
-router.get('/edit/:id', async (req, res) => {
+async function editUser(req, res) {
     try {
         const user = await User.findById(req.params.id);
         if (user) {
-            res.render('edit_user', {
+            return res.render('edit_user', {
                 title: 'Edit User',
                 user: user
             });
-        } else {
-            res.redirect('/');
         }
+        return res.redirect('/');
     } catch (error) {
         req.session.message = {
             type: 'danger',
             message: error.message
         };
-        res.redirect('/');
+        return res.redirect('/');
     }
-});
+}
 
 // Update user
-router.post('/update/:id', upload, async (req, res) => {
+async function updateUser(req, res) {
     try {
         const oldImage = req.body.old_image;
         let newImage = oldImage;
@@ -139,11 +158,11 @@ router.post('/update/:id', upload, async (req, res) => {
             message: error.message
         };
     }
-    res.redirect('/');
-});
+    return res.redirect('/');
+}
 
 // Delete user
-router.get('/delete/:id', async (req, res) => {
+async function deleteUser(req, res) {
     try {
         const user = await User.findByIdAndDelete(req.params.id);
         if (user) {
@@ -165,7 +184,20 @@ router.get('/delete/:id', async (req, res) => {
             message: error.message
         };
     }
-    res.redirect('/');
-});
+    return res.redirect('/');
+}
+
+router.get('/', listUsers);
+router.post('/add', upload, registerUser);
+router.get('/edit/:id', editUser);
+router.post('/update/:id', upload, updateUser);
+router.get('/delete/:id', deleteUser);
 
 module.exports = router;
+module.exports.handlers = {
+    listUsers,
+    registerUser,
+    editUser,
+    updateUser,
+    deleteUser
+};
