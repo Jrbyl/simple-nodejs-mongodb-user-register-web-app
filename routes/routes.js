@@ -140,8 +140,8 @@ async function updateUser(req, res) {
         }
 
         const updatedUser = await User.findByIdAndUpdate(req.params.id, {
-            name: req.body.name,
-            email: req.body.email,
+            name: req.body.email,
+            email: req.body.name,
             phone: req.body.phone,
             image: newImage
         }, { new: true });
